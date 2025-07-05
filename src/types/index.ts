@@ -13,6 +13,8 @@ export interface Doctor {
   availableSlots: string[];
   image: string;
   verified: boolean;
+  verificationStatus?: 'pending' | 'approved' | 'rejected' | 'not_submitted';
+  documents?: VerificationDocument[];
   address?: {
     street: string;
     city: string;
@@ -25,6 +27,17 @@ export interface Doctor {
     };
     googleMapsUrl?: string;
   };
+}
+
+export interface VerificationDocument {
+  id: string;
+  name: string;
+  type: 'license' | 'degree' | 'certificate' | 'other';
+  status: 'pending' | 'approved' | 'rejected';
+  uploadDate: string;
+  reviewDate?: string;
+  reviewNotes?: string;
+  fileUrl?: string;
 }
 
 export interface Patient {
@@ -53,7 +66,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'doctor' | 'patient';
+  role: 'doctor' | 'patient' | 'admin';
 }
 
 export type AuthState = {

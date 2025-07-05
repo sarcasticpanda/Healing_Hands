@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, User, FileText, Settings, LogOut, Search, Plus, MapPin } from 'lucide-react';
+import { Calendar, Clock, User, FileText, Settings, LogOut, Search, Plus, MapPin, Shield, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { mockAppointments, mockDoctors } from '../data/mockData';
 import { Doctor } from '../types';
 import DoctorCard from './DoctorCard';
 import AppointmentModal from './AppointmentModal';
 import DoctorLocationManager from './DoctorLocationManager';
+import DoctorVerification from './DoctorVerification';
 
 const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
@@ -14,6 +15,7 @@ const Dashboard: React.FC = () => {
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isEditingLocation, setIsEditingLocation] = useState(false);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
 
   const userAppointments = mockAppointments.filter(
     appointment => appointment.patientId === user?.id || appointment.doctorId === user?.id
@@ -56,6 +58,32 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const getVerificationStatusIcon = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return <CheckCircle className="h-5 w-5 text-green-600" />;
+      case 'pending':
+        return <AlertCircle className="h-5 w-5 text-yellow-600" />;
+      case 'rejected':
+        return <XCircle className="h-5 w-5 text-red-600" />;
+      default:
+        return <Shield className="h-5 w-5 text-gray-400" />;
+    }
+  };
+
+  const getVerificationStatusColor = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'rejected':
+        return 'bg-red-100 text-red-800 border-red-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
   // Mock current doctor's address for demonstration
   const currentDoctorAddress = user?.role === 'doctor' ? {
     street: '123 Medical Center Drive',
@@ -66,6 +94,9 @@ const Dashboard: React.FC = () => {
     coordinates: { lat: 40.7128, lng: -74.0060 },
     googleMapsUrl: 'https://www.google.com/maps/place/123+Medical+Center+Drive,+New+York,+NY+10001'
   } : undefined;
+
+  // Mock verification status for demonstration
+  const mockVerificationStatus = 'not_submitted'; // Can be: 'not_submitted', 'pending', 'approved', 'rejected'
 
   return (
     <div className="min-h-screen bg-theme-background">
@@ -111,17 +142,34 @@ const Dashboard: React.FC = () => {
               )}
 
               {user?.role === 'doctor' && (
-                <button
-                  onClick={() => setActiveTab('clinic-location')}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                    activeTab === 'clinic-location'
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'text-theme-text-secondary hover:bg-theme-hover'
-                  }`}
-                >
-                  <MapPin className="h-5 w-5" />
-                  <span>Clinic Location</span>
-                </button>
+                <>
+                  <button
+                    onClick={() => setActiveTab('verification')}
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                      activeTab === 'verification'
+                        ? 'bg-blue-50 text-blue-600'
+                        : 'text-theme-text-secondary hover:bg-theme-hover'
+                    }`}
+                  >
+                    <Shield className="h-5 w-5" />
+                    <span>Verification</span>
+                    {mockVerificationStatus === 'pending' && (
+                      <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('clinic-location')}
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                      activeTab === 'clinic-location'
+                        ? 'bg-blue-50 text-blue-600'
+                        : 'text-theme-text-secondary hover:bg-theme-hover'
+                    }`}
+                  >
+                    <MapPin className="h-5 w-5" />
+                    <span>Clinic Location</span>
+                  </button>
+                </>
               )}
               
               <button
@@ -281,6 +329,143 @@ const Dashboard: React.FC = () => {
               </div>
             )}
 
+            {activeTab === 'verification' && user?.role === 'doctor' && (
+              <div className="bg-theme-card rounded-xl shadow-lg p-6 border border-theme-border">
+                <div className="flex items-center space-x-3 mb-6">
+                  <Shield className="h-6 w-6 text-blue-600" />
+                  <h2 className="text-2xl font-bold text-theme-text-primary">Doctor Verification</h2>
+                </div>
+
+                {/* Verification Status Card */}
+                <div className={`p-6 rounded-lg border-2 mb-6 ${getVerificationStatusColor(mockVerificationStatus)}`}>
+                  <div className="flex items-center space-x-3 mb-4">
+                    {getVerificationStatusIcon(mockVerificationStatus)}
+                    <div>
+                      <h3 className="font-semibold text-lg">
+                        {mockVerificationStatus === 'not_submitted' && 'Verification Not Started'}
+                        {mockVerificationStatus === 'pending' && 'Verification Under Review'}
+                        {mockVerificationStatus === 'approved' && 'Verification Approved'}
+                        {mockVerificationStatus === 'rejected' && 'Verification Rejected'}
+                      </h3>
+                      <p className="text-sm opacity-80">
+                        {mockVerificationStatus === 'not_submitted' && 'Submit your documents to get verified'}
+                        {mockVerificationStatus === 'pending' && 'Your documents are being reviewed by our team'}
+                        {mockVerificationStatus === 'approved' && 'Your account is verified and trusted'}
+                        {mockVerificationStatus === 'rejected' && 'Please resubmit your documents with corrections'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {mockVerificationStatus === 'not_submitted' && (
+                    <button
+                      onClick={() => setShowVerificationModal(true)}
+                      className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                    >
+                      Start Verification Process
+                    </button>
+                  )}
+
+                  {mockVerificationStatus === 'pending' && (
+                    <div className="space-y-3">
+                      <p className="text-sm">
+                        We're reviewing your submitted documents. This process typically takes 24-48 hours.
+                      </p>
+                      <button
+                        onClick={() => setShowVerificationModal(true)}
+                        className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors text-sm"
+                      >
+                        View Submitted Documents
+                      </button>
+                    </div>
+                  )}
+
+                  {mockVerificationStatus === 'approved' && (
+                    <div className="space-y-3">
+                      <p className="text-sm">
+                        Congratulations! Your account is now verified. Patients can see your verified badge.
+                      </p>
+                      <div className="flex items-center space-x-2">
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                        <span className="text-sm font-medium">Verified Doctor</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {mockVerificationStatus === 'rejected' && (
+                    <div className="space-y-3">
+                      <p className="text-sm">
+                        Your verification was rejected. Please review the feedback and resubmit your documents.
+                      </p>
+                      <button
+                        onClick={() => setShowVerificationModal(true)}
+                        className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm"
+                      >
+                        Resubmit Documents
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Verification Benefits */}
+                <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
+                  <h4 className="font-medium text-blue-900 mb-3">Benefits of Verification</h4>
+                  <ul className="text-sm text-blue-800 space-y-2">
+                    <li className="flex items-center space-x-2">
+                      <CheckCircle className="h-4 w-4 text-blue-600" />
+                      <span>Verified badge displayed on your profile</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <CheckCircle className="h-4 w-4 text-blue-600" />
+                      <span>Higher visibility in search results</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <CheckCircle className="h-4 w-4 text-blue-600" />
+                      <span>Increased patient trust and bookings</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <CheckCircle className="h-4 w-4 text-blue-600" />
+                      <span>Access to premium features</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Required Documents */}
+                <div className="mt-6 bg-gray-50 p-6 rounded-lg border border-gray-200">
+                  <h4 className="font-medium text-gray-900 mb-3">Required Documents</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center space-x-3">
+                      <FileText className="h-5 w-5 text-gray-600" />
+                      <div>
+                        <p className="font-medium text-gray-900">Medical License</p>
+                        <p className="text-sm text-gray-600">Valid medical license document</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <FileText className="h-5 w-5 text-gray-600" />
+                      <div>
+                        <p className="font-medium text-gray-900">Medical Degree</p>
+                        <p className="text-sm text-gray-600">Medical school diploma/certificate</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <FileText className="h-5 w-5 text-gray-600" />
+                      <div>
+                        <p className="font-medium text-gray-900">Specialty Certificate</p>
+                        <p className="text-sm text-gray-600">Specialty training certificate (optional)</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <MapPin className="h-5 w-5 text-gray-600" />
+                      <div>
+                        <p className="font-medium text-gray-900">Clinic Location</p>
+                        <p className="text-sm text-gray-600">Valid clinic address with Google Maps</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {activeTab === 'clinic-location' && user?.role === 'doctor' && (
               <div className="bg-theme-card rounded-xl shadow-lg p-6 border border-theme-border">
                 <div className="flex items-center space-x-3 mb-6">
@@ -406,6 +591,11 @@ const Dashboard: React.FC = () => {
         doctor={selectedDoctor}
         onBookAppointment={handleAppointmentSubmit}
       />
+
+      {/* Verification Modal */}
+      {showVerificationModal && (
+        <DoctorVerification onClose={() => setShowVerificationModal(false)} />
+      )}
     </div>
   );
 };
