@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, User, FileText, Settings, LogOut, Search, Plus } from 'lucide-react';
+import { Calendar, Clock, User, FileText, Settings, LogOut, Search, Plus, MapPin } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { mockAppointments, mockDoctors } from '../data/mockData';
 import { Doctor } from '../types';
 import DoctorCard from './DoctorCard';
 import AppointmentModal from './AppointmentModal';
+import DoctorLocationManager from './DoctorLocationManager';
 
 const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
@@ -12,6 +13,7 @@ const Dashboard: React.FC = () => {
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isEditingLocation, setIsEditingLocation] = useState(false);
 
   const userAppointments = mockAppointments.filter(
     appointment => appointment.patientId === user?.id || appointment.doctorId === user?.id
@@ -33,6 +35,12 @@ const Dashboard: React.FC = () => {
     setShowAppointmentModal(false);
   };
 
+  const handleLocationSave = (address: any) => {
+    console.log('Location saved:', address);
+    alert('Clinic location updated successfully!');
+    setIsEditingLocation(false);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'confirmed':
@@ -47,6 +55,17 @@ const Dashboard: React.FC = () => {
         return 'bg-gray-100 text-gray-800';
     }
   };
+
+  // Mock current doctor's address for demonstration
+  const currentDoctorAddress = user?.role === 'doctor' ? {
+    street: '123 Medical Center Drive',
+    city: 'New York',
+    state: 'NY',
+    zipCode: '10001',
+    country: 'United States',
+    coordinates: { lat: 40.7128, lng: -74.0060 },
+    googleMapsUrl: 'https://www.google.com/maps/place/123+Medical+Center+Drive,+New+York,+NY+10001'
+  } : undefined;
 
   return (
     <div className="min-h-screen bg-theme-background">
@@ -88,6 +107,20 @@ const Dashboard: React.FC = () => {
                 >
                   <Plus className="h-5 w-5" />
                   <span>Book Appointment</span>
+                </button>
+              )}
+
+              {user?.role === 'doctor' && (
+                <button
+                  onClick={() => setActiveTab('clinic-location')}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                    activeTab === 'clinic-location'
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-theme-text-secondary hover:bg-theme-hover'
+                  }`}
+                >
+                  <MapPin className="h-5 w-5" />
+                  <span>Clinic Location</span>
                 </button>
               )}
               
@@ -248,6 +281,41 @@ const Dashboard: React.FC = () => {
               </div>
             )}
 
+            {activeTab === 'clinic-location' && user?.role === 'doctor' && (
+              <div className="bg-theme-card rounded-xl shadow-lg p-6 border border-theme-border">
+                <div className="flex items-center space-x-3 mb-6">
+                  <MapPin className="h-6 w-6 text-blue-600" />
+                  <h2 className="text-2xl font-bold text-theme-text-primary">Clinic Location Management</h2>
+                </div>
+
+                <div className="mb-6">
+                  <p className="text-theme-text-secondary">
+                    Manage your clinic's address and location information. This helps patients find your clinic 
+                    and get accurate directions using Google Maps.
+                  </p>
+                </div>
+
+                <DoctorLocationManager
+                  currentAddress={currentDoctorAddress}
+                  onSave={handleLocationSave}
+                  isEditing={isEditingLocation}
+                  onToggleEdit={() => setIsEditingLocation(!isEditingLocation)}
+                />
+
+                {!isEditingLocation && (
+                  <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <h4 className="font-medium text-blue-900 mb-2">Benefits of Setting Your Location</h4>
+                    <ul className="text-sm text-blue-800 space-y-1">
+                      <li>• Patients can easily find your clinic</li>
+                      <li>• Integrated Google Maps directions</li>
+                      <li>• Improved visibility in location-based searches</li>
+                      <li>• Better patient experience and satisfaction</li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
             {activeTab === 'profile' && (
               <div className="bg-theme-card rounded-xl shadow-lg p-6 border border-theme-border">
                 <div className="flex items-center space-x-3 mb-6">
@@ -321,7 +389,7 @@ const Dashboard: React.FC = () => {
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" className="sr-only peer" />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
                   </div>
                 </div>

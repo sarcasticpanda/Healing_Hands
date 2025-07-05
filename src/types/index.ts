@@ -13,6 +13,18 @@ export interface Doctor {
   availableSlots: string[];
   image: string;
   verified: boolean;
+  address?: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+    coordinates?: {
+      lat: number;
+      lng: number;
+    };
+    googleMapsUrl?: string;
+  };
 }
 
 export interface Patient {
