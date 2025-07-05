@@ -13,11 +13,6 @@ export interface Doctor {
   availableSlots: string[];
   image: string;
   verified: boolean;
-  coordinates?: {
-    lat: number;
-    lng: number;
-  };
-  mapUrl?: string;
 }
 
 export interface Patient {
@@ -54,21 +49,3 @@ export type AuthState = {
   isAuthenticated: boolean;
   loading: boolean;
 };
-
-export interface VerificationDocument {
-  id: string;
-  name: string;
-  type: 'license' | 'degree' | 'certificate' | 'other';
-  file: File | null;
-  status: 'pending' | 'approved' | 'rejected';
-  uploadDate: string;
-}
-
-export interface DoctorLocation {
-  address: string;
-  coordinates: {
-    lat: number;
-    lng: number;
-  };
-  mapUrl: string;
-}

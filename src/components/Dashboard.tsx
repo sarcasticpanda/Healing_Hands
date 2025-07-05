@@ -1,24 +1,25 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, User, FileText, Settings, LogOut, Search, Plus, Shield, MapPin, Upload } from 'lucide-react';
+import { Calendar, Clock, User, FileText, Settings, LogOut, Search, Plus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { mockAppointments, mockDoctors } from '../data/mockData';
 import { Doctor } from '../types';
 import DoctorCard from './DoctorCard';
 import AppointmentModal from './AppointmentModal';
-import DoctorVerification from './DoctorVerification';
-import AdvancedDoctorFilter from './AdvancedDoctorFilter';
 
 const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('appointments');
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
-  const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredDoctors, setFilteredDoctors] = useState<Doctor[]>(mockDoctors);
 
   const userAppointments = mockAppointments.filter(
     appointment => appointment.patientId === user?.id || appointment.doctorId === user?.id
+  );
+
+  const filteredDoctors = mockDoctors.filter(doctor =>
+    doctor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    doctor.speciality.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleBookAppointment = (doctor: Doctor) => {
@@ -87,20 +88,6 @@ const Dashboard: React.FC = () => {
                 >
                   <Plus className="h-5 w-5" />
                   <span>Book Appointment</span>
-                </button>
-              )}
-
-              {user?.role === 'doctor' && (
-                <button
-                  onClick={() => setActiveTab('verification')}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                    activeTab === 'verification'
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'text-theme-text-secondary hover:bg-theme-hover'
-                  }`}
-                >
-                  <Shield className="h-5 w-5" />
-                  <span>Verification</span>
                 </button>
               )}
               
@@ -220,133 +207,44 @@ const Dashboard: React.FC = () => {
             )}
 
             {activeTab === 'book-appointment' && user?.role === 'patient' && (
-              <div className="space-y-6">
-                <div className="bg-theme-card rounded-xl shadow-lg p-6 border border-theme-border">
-                  <div className="flex items-center space-x-3 mb-6">
-                    <Plus className="h-6 w-6 text-blue-600" />
-                    <h2 className="text-2xl font-bold text-theme-text-primary">Book New Appointment</h2>
-                  </div>
+              <div className="bg-theme-card rounded-xl shadow-lg p-6 border border-theme-border">
+                <div className="flex items-center space-x-3 mb-6">
+                  <Plus className="h-6 w-6 text-blue-600" />
+                  <h2 className="text-2xl font-bold text-theme-text-primary">Book New Appointment</h2>
+                </div>
 
-                  {/* Advanced Filter Component */}
-                  <AdvancedDoctorFilter
-                    doctors={mockDoctors}
-                    onFilteredDoctors={setFilteredDoctors}
-                    searchTerm={searchTerm}
-                    onSearchChange={setSearchTerm}
-                  />
+                {/* Search Bar */}
+                <div className="mb-6">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 h-5 w-5 text-theme-text-secondary" />
+                    <input
+                      type="text"
+                      placeholder="Search doctors by name or specialty..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 border border-theme-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-theme-background text-theme-text-primary"
+                    />
+                  </div>
                 </div>
 
                 {/* Doctors Grid */}
-                <div className="bg-theme-card rounded-xl shadow-lg p-6 border border-theme-border">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-semibold text-theme-text-primary">
-                      Available Doctors ({filteredDoctors.length})
-                    </h3>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-6">
-                    {filteredDoctors.map(doctor => (
-                      <DoctorCard
-                        key={doctor.id}
-                        doctor={doctor}
-                        onBookAppointment={handleBookAppointment}
-                      />
-                    ))}
-                  </div>
-
-                  {filteredDoctors.length === 0 && (
-                    <div className="text-center py-12">
-                      <Search className="h-16 w-16 text-theme-text-secondary mx-auto mb-4" />
-                      <p className="text-theme-text-secondary text-lg">No doctors found</p>
-                      <p className="text-theme-text-secondary mt-2">Try adjusting your search terms or filters.</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'verification' && user?.role === 'doctor' && (
-              <div className="bg-theme-card rounded-xl shadow-lg p-6 border border-theme-border">
-                <div className="flex items-center space-x-3 mb-6">
-                  <Shield className="h-6 w-6 text-blue-600" />
-                  <h2 className="text-2xl font-bold text-theme-text-primary">Doctor Verification</h2>
+                <div className="grid grid-cols-1 gap-6">
+                  {filteredDoctors.map(doctor => (
+                    <DoctorCard
+                      key={doctor.id}
+                      doctor={doctor}
+                      onBookAppointment={handleBookAppointment}
+                    />
+                  ))}
                 </div>
 
-                <div className="space-y-6">
-                  {/* Verification Status */}
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <div className="flex items-center space-x-3">
-                      <Shield className="h-6 w-6 text-yellow-600" />
-                      <div>
-                        <h3 className="font-medium text-yellow-800">Verification Status: Pending</h3>
-                        <p className="text-sm text-yellow-700 mt-1">
-                          Complete your verification to gain patient trust and increase bookings.
-                        </p>
-                      </div>
-                    </div>
+                {filteredDoctors.length === 0 && (
+                  <div className="text-center py-12">
+                    <Search className="h-16 w-16 text-theme-text-secondary mx-auto mb-4" />
+                    <p className="text-theme-text-secondary text-lg">No doctors found</p>
+                    <p className="text-theme-text-secondary mt-2">Try adjusting your search terms.</p>
                   </div>
-
-                  {/* Benefits of Verification */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <h3 className="font-semibold text-theme-text-primary">Benefits of Verification:</h3>
-                      <ul className="space-y-2 text-sm text-theme-text-secondary">
-                        <li className="flex items-center space-x-2">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          <span>Blue verified badge on your profile</span>
-                        </li>
-                        <li className="flex items-center space-x-2">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          <span>Higher ranking in search results</span>
-                        </li>
-                        <li className="flex items-center space-x-2">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          <span>Increased patient trust and bookings</span>
-                        </li>
-                        <li className="flex items-center space-x-2">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          <span>Location visibility for directions</span>
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h3 className="font-semibold text-theme-text-primary">Required Documents:</h3>
-                      <ul className="space-y-2 text-sm text-theme-text-secondary">
-                        <li className="flex items-center space-x-2">
-                          <FileText className="h-4 w-4 text-blue-600" />
-                          <span>Medical License</span>
-                          <span className="text-red-500">*</span>
-                        </li>
-                        <li className="flex items-center space-x-2">
-                          <FileText className="h-4 w-4 text-blue-600" />
-                          <span>Medical Degree</span>
-                          <span className="text-red-500">*</span>
-                        </li>
-                        <li className="flex items-center space-x-2">
-                          <FileText className="h-4 w-4 text-blue-600" />
-                          <span>Specialty Certificates</span>
-                        </li>
-                        <li className="flex items-center space-x-2">
-                          <MapPin className="h-4 w-4 text-green-600" />
-                          <span>Clinic Location</span>
-                          <span className="text-red-500">*</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-
-                  {/* Action Button */}
-                  <div className="flex justify-center">
-                    <button
-                      onClick={() => setShowVerificationModal(true)}
-                      className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center space-x-2"
-                    >
-                      <Upload className="h-5 w-5" />
-                      <span>Start Verification Process</span>
-                    </button>
-                  </div>
-                </div>
+                )}
               </div>
             )}
 
@@ -433,17 +331,13 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Modals */}
+      {/* Appointment Modal */}
       <AppointmentModal
         isOpen={showAppointmentModal}
         onClose={() => setShowAppointmentModal(false)}
         doctor={selectedDoctor}
         onBookAppointment={handleAppointmentSubmit}
       />
-
-      {showVerificationModal && (
-        <DoctorVerification onClose={() => setShowVerificationModal(false)} />
-      )}
     </div>
   );
 };

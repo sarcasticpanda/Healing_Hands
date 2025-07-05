@@ -1,14 +1,13 @@
 import React from 'react';
-import { Heart, User, LogOut, Menu, LayoutDashboard } from 'lucide-react';
+import { Heart, User, LogOut, Menu } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import ThemeToggle from './ThemeToggle';
 
 interface HeaderProps {
   onAuthClick: () => void;
-  onDashboardClick?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onAuthClick, onDashboardClick }) => {
+const Header: React.FC<HeaderProps> = ({ onAuthClick }) => {
   const { user, isAuthenticated, logout } = useAuth();
 
   return (
@@ -35,15 +34,6 @@ const Header: React.FC<HeaderProps> = ({ onAuthClick, onDashboardClick }) => {
             <a href="#contact" className="text-theme-text-secondary hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
               Contact
             </a>
-            {isAuthenticated && user?.role === 'patient' && onDashboardClick && (
-              <button
-                onClick={onDashboardClick}
-                className="flex items-center space-x-2 text-theme-text-secondary hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-              >
-                <LayoutDashboard className="h-4 w-4" />
-                <span>Dashboard</span>
-              </button>
-            )}
           </nav>
 
           <div className="flex items-center space-x-4">
@@ -57,15 +47,6 @@ const Header: React.FC<HeaderProps> = ({ onAuthClick, onDashboardClick }) => {
                     {user?.role}
                   </span>
                 </div>
-                {user?.role === 'patient' && onDashboardClick && (
-                  <button
-                    onClick={onDashboardClick}
-                    className="hidden sm:flex items-center space-x-1 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                  >
-                    <LayoutDashboard className="h-4 w-4" />
-                    <span>Dashboard</span>
-                  </button>
-                )}
                 <button
                   onClick={logout}
                   className="flex items-center space-x-1 text-theme-text-secondary hover:text-red-600 transition-colors"
