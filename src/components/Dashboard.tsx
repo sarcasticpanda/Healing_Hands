@@ -18,9 +18,10 @@ const Dashboard: React.FC = () => {
   const [filteredDoctors, setFilteredDoctors] = useState<Doctor[]>(mockDoctors);
   const [isEditingLocation, setIsEditingLocation] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
-
-  const userAppointments = mockAppointments.filter(
-    appointment => appointment.patientId === user?.id || appointment.doctorId === user?.id
+  const [userAppointments, setUserAppointments] = useState(
+    mockAppointments.filter(
+      appointment => appointment.patientId === user?.id || appointment.doctorId === user?.id
+    )
   );
 
   const handleBookAppointment = (doctor: Doctor) => {
@@ -30,8 +31,18 @@ const Dashboard: React.FC = () => {
 
   const handleAppointmentSubmit = (appointmentData: any) => {
     console.log('Appointment booked:', appointmentData);
-    alert('Appointment booked successfully!');
+    
+    // Add the new appointment to the list
+    const newAppointment = {
+      ...appointmentData,
+      patientId: user?.id || '',
+    };
+    
+    setUserAppointments(prev => [...prev, newAppointment]);
     setShowAppointmentModal(false);
+    
+    // Switch to appointments tab to show the new booking
+    setActiveTab('appointments');
   };
 
   const handleLocationSave = (address: any) => {
@@ -130,6 +141,11 @@ const Dashboard: React.FC = () => {
               >
                 <Calendar className="h-5 w-5" />
                 <span>My Appointments</span>
+                {userAppointments.length > 0 && (
+                  <span className="bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {userAppointments.length}
+                  </span>
+                )}
               </button>
 
               {user?.role === 'patient' && (
@@ -267,8 +283,14 @@ const Dashboard: React.FC = () => {
                                 {new Date(appointment.date).toLocaleDateString()} at {appointment.time}
                               </p>
                               <p className="text-sm text-theme-text-secondary">
-                                {user?.role === 'doctor' ? 'Patient appointment' : 'Doctor consultation'}
+                                {appointment.doctorName ? `Dr. ${appointment.doctorName}` : 'Doctor consultation'} 
+                                {appointment.doctorSpecialty && ` - ${appointment.doctorSpecialty}`}
                               </p>
+                              {appointment.id && (
+                                <p className="text-xs text-blue-600 font-mono">
+                                  ID: {appointment.id}
+                                </p>
+                              )}
                             </div>
                           </div>
                           <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(appointment.status)}`}>
