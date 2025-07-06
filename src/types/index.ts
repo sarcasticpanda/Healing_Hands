@@ -60,6 +60,24 @@ export interface Appointment {
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
   symptoms: string;
   notes?: string;
+  doctorName?: string;
+  doctorSpecialty?: string;
+}
+
+export interface Medication {
+  id: string;
+  name: string;
+  dosage: string;
+  frequency: string;
+  duration: string;
+  instructions: string;
+  prescribedBy: string;
+  prescribedDate: string;
+  appointmentId: string;
+  type: 'tablet' | 'capsule' | 'syrup' | 'injection' | 'cream' | 'drops';
+  status: 'active' | 'completed' | 'discontinued';
+  sideEffects?: string[];
+  notes?: string;
 }
 
 export interface User {

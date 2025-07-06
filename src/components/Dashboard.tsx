@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, User, FileText, Settings, LogOut, Search, Plus, MapPin, Shield, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
+import { Calendar, Clock, User, FileText, Settings, LogOut, Search, Plus, MapPin, Shield, CheckCircle, AlertCircle, XCircle, Pill, Activity, TrendingUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { mockAppointments, mockDoctors } from '../data/mockData';
-import { Doctor } from '../types';
+import { mockAppointments, mockDoctors, mockMedications } from '../data/mockData';
+import { Doctor, Medication } from '../types';
 import DoctorCard from './DoctorCard';
 import AppointmentModal from './AppointmentModal';
 import DoctorLocationManager from './DoctorLocationManager';
@@ -11,7 +11,7 @@ import AdvancedDoctorFilter from './AdvancedDoctorFilter';
 
 const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState('appointments');
+  const [activeTab, setActiveTab] = useState('overview');
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -23,6 +23,11 @@ const Dashboard: React.FC = () => {
       appointment => appointment.patientId === user?.id || appointment.doctorId === user?.id
     )
   );
+
+  // Get user medications (for patients)
+  const userMedications = user?.role === 'patient' ? mockMedications : [];
+  const activeMedications = userMedications.filter(med => med.status === 'active');
+  const recentMedications = userMedications.slice(0, 3); // Show last 3 medications
 
   const handleBookAppointment = (doctor: Doctor) => {
     setSelectedDoctor(doctor);
@@ -71,6 +76,37 @@ const Dashboard: React.FC = () => {
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getMedicationStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-100 text-green-800';
+      case 'completed':
+        return 'bg-blue-100 text-blue-800';
+      case 'discontinued':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getMedicationTypeIcon = (type: string) => {
+    switch (type) {
+      case 'tablet':
+      case 'capsule':
+        return '💊';
+      case 'syrup':
+        return '🥤';
+      case 'injection':
+        return '💉';
+      case 'cream':
+        return '🧴';
+      case 'drops':
+        return '💧';
+      default:
+        return '💊';
     }
   };
 
@@ -132,6 +168,18 @@ const Dashboard: React.FC = () => {
 
             <nav className="space-y-2">
               <button
+                onClick={() => setActiveTab('overview')}
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                  activeTab === 'overview'
+                    ? 'bg-blue-50 text-blue-600'
+                    : 'text-theme-text-secondary hover:bg-theme-hover'
+                }`}
+              >
+                <Activity className="h-5 w-5" />
+                <span>Overview</span>
+              </button>
+
+              <button
                 onClick={() => setActiveTab('appointments')}
                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                   activeTab === 'appointments'
@@ -149,17 +197,36 @@ const Dashboard: React.FC = () => {
               </button>
 
               {user?.role === 'patient' && (
-                <button
-                  onClick={() => setActiveTab('book-appointment')}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                    activeTab === 'book-appointment'
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'text-theme-text-secondary hover:bg-theme-hover'
-                  }`}
-                >
-                  <Plus className="h-5 w-5" />
-                  <span>Book Appointment</span>
-                </button>
+                <>
+                  <button
+                    onClick={() => setActiveTab('medications')}
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                      activeTab === 'medications'
+                        ? 'bg-blue-50 text-blue-600'
+                        : 'text-theme-text-secondary hover:bg-theme-hover'
+                    }`}
+                  >
+                    <Pill className="h-5 w-5" />
+                    <span>My Medications</span>
+                    {activeMedications.length > 0 && (
+                      <span className="bg-green-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {activeMedications.length}
+                      </span>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('book-appointment')}
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                      activeTab === 'book-appointment'
+                        ? 'bg-blue-50 text-blue-600'
+                        : 'text-theme-text-secondary hover:bg-theme-hover'
+                    }`}
+                  >
+                    <Plus className="h-5 w-5" />
+                    <span>Book Appointment</span>
+                  </button>
+                </>
               )}
 
               {user?.role === 'doctor' && (
@@ -229,6 +296,288 @@ const Dashboard: React.FC = () => {
 
           {/* Main Content */}
           <div className="flex-1">
+            {activeTab === 'overview' && (
+              <div className="space-y-6">
+                {/* Welcome Section */}
+                <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl shadow-lg p-6 text-white">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-2xl font-bold mb-2">Welcome back, {user?.name}!</h2>
+                      <p className="text-blue-100">
+                        {user?.role === 'patient' 
+                          ? 'Manage your health appointments and track your wellness journey.'
+                          : 'Manage your patient appointments and clinic information.'
+                        }
+                      </p>
+                    </div>
+                    <div className="hidden md:block">
+                      <Activity className="h-16 w-16 text-blue-200" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="bg-theme-card rounded-xl shadow-lg p-6 border border-theme-border">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-theme-text-secondary text-sm font-medium">
+                          {user?.role === 'patient' ? 'Total Appointments' : 'Patient Appointments'}
+                        </p>
+                        <p className="text-2xl font-bold text-theme-text-primary">{userAppointments.length}</p>
+                      </div>
+                      <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <Calendar className="h-6 w-6 text-green-600" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {user?.role === 'patient' && (
+                    <div className="bg-theme-card rounded-xl shadow-lg p-6 border border-theme-border">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-theme-text-secondary text-sm font-medium">Active Medications</p>
+                          <p className="text-2xl font-bold text-theme-text-primary">{activeMedications.length}</p>
+                        </div>
+                        <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                          <Pill className="h-6 w-6 text-purple-600" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="bg-theme-card rounded-xl shadow-lg p-6 border border-theme-border">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-theme-text-secondary text-sm font-medium">Health Score</p>
+                        <p className="text-2xl font-bold text-theme-text-primary">85%</p>
+                      </div>
+                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <TrendingUp className="h-6 w-6 text-blue-600" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recent Medications for Patients */}
+                {user?.role === 'patient' && recentMedications.length > 0 && (
+                  <div className="bg-theme-card rounded-xl shadow-lg p-6 border border-theme-border">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-xl font-bold text-theme-text-primary flex items-center">
+                        <Pill className="h-6 w-6 text-purple-600 mr-2" />
+                        Recent Medications
+                      </h3>
+                      <button
+                        onClick={() => setActiveTab('medications')}
+                        className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                      >
+                        View All
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      {recentMedications.map((medication) => (
+                        <div
+                          key={medication.id}
+                          className="flex items-center justify-between p-4 border border-theme-border rounded-lg hover:border-blue-300 transition-colors"
+                        >
+                          <div className="flex items-center space-x-4">
+                            <div className="text-2xl">{getMedicationTypeIcon(medication.type)}</div>
+                            <div>
+                              <h4 className="font-medium text-theme-text-primary">{medication.name}</h4>
+                              <p className="text-sm text-theme-text-secondary">
+                                {medication.dosage} • {medication.frequency}
+                              </p>
+                              <p className="text-xs text-blue-600">
+                                Prescribed by {medication.prescribedBy}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getMedicationStatusColor(medication.status)}`}>
+                              {medication.status}
+                            </span>
+                            <p className="text-xs text-theme-text-secondary mt-1">
+                              {new Date(medication.prescribedDate).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Recent Appointments */}
+                <div className="bg-theme-card rounded-xl shadow-lg p-6 border border-theme-border">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-bold text-theme-text-primary">Recent Appointments</h3>
+                    <button
+                      onClick={() => setActiveTab('appointments')}
+                      className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                    >
+                      View All
+                    </button>
+                  </div>
+
+                  {userAppointments.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Calendar className="h-12 w-12 text-theme-text-secondary mx-auto mb-3" />
+                      <p className="text-theme-text-secondary">No appointments yet</p>
+                      {user?.role === 'patient' && (
+                        <button
+                          onClick={() => setActiveTab('book-appointment')}
+                          className="mt-3 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                        >
+                          Book Your First Appointment
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {userAppointments.slice(0, 3).map((appointment) => (
+                        <div
+                          key={appointment.id}
+                          className="flex items-center justify-between p-4 border border-theme-border rounded-lg hover:border-blue-300 transition-colors"
+                        >
+                          <div className="flex items-center space-x-3">
+                            <Clock className="h-5 w-5 text-theme-text-secondary" />
+                            <div>
+                              <p className="font-medium text-theme-text-primary">
+                                {new Date(appointment.date).toLocaleDateString()} at {appointment.time}
+                              </p>
+                              <p className="text-sm text-theme-text-secondary">
+                                {appointment.doctorName ? `${appointment.doctorName}` : 'Doctor consultation'} 
+                                {appointment.doctorSpecialty && ` - ${appointment.doctorSpecialty}`}
+                              </p>
+                              {appointment.id && (
+                                <p className="text-xs text-blue-600 font-mono">
+                                  ID: {appointment.id}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(appointment.status)}`}>
+                            {appointment.status}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Quick Actions */}
+                <div className="bg-theme-card rounded-xl shadow-lg p-6 border border-theme-border">
+                  <h3 className="text-xl font-bold text-theme-text-primary mb-4">Quick Actions</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {user?.role === 'patient' && (
+                      <button
+                        onClick={() => setActiveTab('book-appointment')}
+                        className="flex items-center space-x-3 p-4 border-2 border-blue-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors"
+                      >
+                        <Plus className="h-6 w-6 text-blue-600" />
+                        <div className="text-left">
+                          <p className="font-medium text-theme-text-primary">Book Appointment</p>
+                          <p className="text-sm text-theme-text-secondary">Schedule with a doctor</p>
+                        </div>
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => setActiveTab('profile')}
+                      className="flex items-center space-x-3 p-4 border-2 border-green-200 rounded-lg hover:border-green-400 hover:bg-green-50 transition-colors"
+                    >
+                      <User className="h-6 w-6 text-green-600" />
+                      <div className="text-left">
+                        <p className="font-medium text-theme-text-primary">Update Profile</p>
+                        <p className="text-sm text-theme-text-secondary">Manage your information</p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'medications' && user?.role === 'patient' && (
+              <div className="bg-theme-card rounded-xl shadow-lg p-6 border border-theme-border">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center space-x-3">
+                    <Pill className="h-6 w-6 text-purple-600" />
+                    <h2 className="text-2xl font-bold text-theme-text-primary">My Medications</h2>
+                  </div>
+                  <div className="text-sm text-theme-text-secondary">
+                    {activeMedications.length} active • {userMedications.length} total
+                  </div>
+                </div>
+
+                {userMedications.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Pill className="h-16 w-16 text-theme-text-secondary mx-auto mb-4" />
+                    <p className="text-theme-text-secondary text-lg">No medications prescribed yet</p>
+                    <p className="text-theme-text-secondary mt-2">Your prescribed medications will appear here</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {userMedications.map((medication) => (
+                      <div
+                        key={medication.id}
+                        className="border border-theme-border rounded-lg p-6 hover:border-blue-300 transition-colors"
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center space-x-4">
+                            <div className="text-3xl">{getMedicationTypeIcon(medication.type)}</div>
+                            <div>
+                              <h3 className="text-xl font-semibold text-theme-text-primary">{medication.name}</h3>
+                              <p className="text-blue-600 font-medium">{medication.dosage} • {medication.frequency}</p>
+                              <p className="text-sm text-theme-text-secondary">
+                                Prescribed by {medication.prescribedBy} on {new Date(medication.prescribedDate).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${getMedicationStatusColor(medication.status)}`}>
+                            {medication.status}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                          <div className="bg-theme-background p-3 rounded-lg border border-theme-border">
+                            <h4 className="font-medium text-theme-text-primary mb-2">Instructions</h4>
+                            <p className="text-sm text-theme-text-secondary">{medication.instructions}</p>
+                          </div>
+                          <div className="bg-theme-background p-3 rounded-lg border border-theme-border">
+                            <h4 className="font-medium text-theme-text-primary mb-2">Duration</h4>
+                            <p className="text-sm text-theme-text-secondary">{medication.duration}</p>
+                          </div>
+                        </div>
+
+                        {medication.sideEffects && medication.sideEffects.length > 0 && (
+                          <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200 mb-4">
+                            <h4 className="font-medium text-yellow-900 mb-2">Possible Side Effects</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {medication.sideEffects.map((effect, index) => (
+                                <span
+                                  key={index}
+                                  className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full"
+                                >
+                                  {effect}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {medication.notes && (
+                          <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                            <h4 className="font-medium text-blue-900 mb-2">Doctor's Notes</h4>
+                            <p className="text-sm text-blue-800">{medication.notes}</p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {activeTab === 'appointments' && (
               <div className="bg-theme-card rounded-xl shadow-lg p-6 border border-theme-border">
                 <div className="flex items-center justify-between mb-6">
@@ -283,7 +632,7 @@ const Dashboard: React.FC = () => {
                                 {new Date(appointment.date).toLocaleDateString()} at {appointment.time}
                               </p>
                               <p className="text-sm text-theme-text-secondary">
-                                {appointment.doctorName ? `Dr. ${appointment.doctorName}` : 'Doctor consultation'} 
+                                {appointment.doctorName ? `${appointment.doctorName}` : 'Doctor consultation'} 
                                 {appointment.doctorSpecialty && ` - ${appointment.doctorSpecialty}`}
                               </p>
                               {appointment.id && (

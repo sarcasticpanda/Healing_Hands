@@ -1,4 +1,4 @@
-import { Doctor, Patient, Appointment } from '../types';
+import { Doctor, Patient, Appointment, Medication } from '../types';
 
 export const mockDoctors: Doctor[] = [
   {
@@ -176,7 +176,102 @@ export const mockAppointments: Appointment[] = [
     status: 'confirmed',
     symptoms: 'Chest pain and shortness of breath',
     notes: 'Patient reports symptoms during exercise',
+    doctorName: 'Dr. Sarah Johnson',
+    doctorSpecialty: 'Cardiology',
   },
+];
+
+export const mockMedications: Medication[] = [
+  {
+    id: 'MED001',
+    name: 'Lisinopril',
+    dosage: '10mg',
+    frequency: 'Once daily',
+    duration: '30 days',
+    instructions: 'Take with or without food, preferably at the same time each day',
+    prescribedBy: 'Dr. Sarah Johnson',
+    prescribedDate: '2024-01-15',
+    appointmentId: '1',
+    type: 'tablet',
+    status: 'active',
+    sideEffects: ['Dry cough', 'Dizziness', 'Headache'],
+    notes: 'Monitor blood pressure regularly. Contact doctor if persistent cough develops.'
+  },
+  {
+    id: 'MED002',
+    name: 'Metformin',
+    dosage: '500mg',
+    frequency: 'Twice daily',
+    duration: '90 days',
+    instructions: 'Take with meals to reduce stomach upset',
+    prescribedBy: 'Dr. Emily Rodriguez',
+    prescribedDate: '2024-01-10',
+    appointmentId: 'APT123456',
+    type: 'tablet',
+    status: 'active',
+    sideEffects: ['Nausea', 'Diarrhea', 'Metallic taste'],
+    notes: 'For diabetes management. Check blood sugar levels as directed.'
+  },
+  {
+    id: 'MED003',
+    name: 'Ibuprofen',
+    dosage: '400mg',
+    frequency: 'As needed (max 3 times daily)',
+    duration: '7 days',
+    instructions: 'Take with food or milk to prevent stomach irritation',
+    prescribedBy: 'Dr. Robert Thompson',
+    prescribedDate: '2024-01-08',
+    appointmentId: 'APT789012',
+    type: 'tablet',
+    status: 'completed',
+    sideEffects: ['Stomach upset', 'Drowsiness'],
+    notes: 'For pain and inflammation relief. Do not exceed recommended dose.'
+  },
+  {
+    id: 'MED004',
+    name: 'Amoxicillin',
+    dosage: '250mg',
+    frequency: 'Three times daily',
+    duration: '10 days',
+    instructions: 'Take at evenly spaced intervals. Complete the full course even if feeling better',
+    prescribedBy: 'Dr. Michael Chen',
+    prescribedDate: '2024-01-05',
+    appointmentId: 'APT345678',
+    type: 'capsule',
+    status: 'completed',
+    sideEffects: ['Nausea', 'Diarrhea', 'Skin rash'],
+    notes: 'Antibiotic for bacterial infection. Take probiotics to maintain gut health.'
+  },
+  {
+    id: 'MED005',
+    name: 'Hydrocortisone Cream',
+    dosage: '1%',
+    frequency: 'Apply twice daily',
+    duration: '14 days',
+    instructions: 'Apply thin layer to affected area. Wash hands after application',
+    prescribedBy: 'Dr. Michael Chen',
+    prescribedDate: '2024-01-12',
+    appointmentId: 'APT567890',
+    type: 'cream',
+    status: 'active',
+    sideEffects: ['Skin irritation', 'Burning sensation'],
+    notes: 'For eczema treatment. Avoid contact with eyes. Discontinue if irritation worsens.'
+  },
+  {
+    id: 'MED006',
+    name: 'Sertraline',
+    dosage: '50mg',
+    frequency: 'Once daily',
+    duration: '90 days',
+    instructions: 'Take in the morning with or without food',
+    prescribedBy: 'Dr. David Miller',
+    prescribedDate: '2024-01-03',
+    appointmentId: 'APT234567',
+    type: 'tablet',
+    status: 'active',
+    sideEffects: ['Nausea', 'Insomnia', 'Dry mouth'],
+    notes: 'For anxiety and depression. May take 4-6 weeks to see full effects. Do not stop abruptly.'
+  }
 ];
 
 export const specialties = [
