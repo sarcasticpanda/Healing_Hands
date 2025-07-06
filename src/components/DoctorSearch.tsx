@@ -67,7 +67,7 @@ const DoctorSearch: React.FC<DoctorSearchProps> = ({ onBookAppointment }) => {
   ].filter(Boolean).length;
 
   return (
-    <section className="py-12 bg-theme-background">
+    <section id="doctors" className="py-12 bg-theme-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-theme-text-primary mb-4">Find Your Perfect Doctor</h2>

@@ -10,7 +10,7 @@ const Hero: React.FC<HeroProps> = ({ onGetStarted }) => {
   const { theme } = useTheme();
 
   return (
-    <section className="bg-gradient-to-br from-theme-primary to-theme-background py-20">
+    <section id="home" className="bg-gradient-to-br from-theme-primary to-theme-background py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
@@ -28,7 +28,15 @@ const Hero: React.FC<HeroProps> = ({ onGetStarted }) => {
             >
               Get Started
             </button>
-            <button className="border-2 border-blue-600 text-blue-600 px-8 py-3 rounded-lg hover:bg-blue-50 transition-colors font-medium text-lg">
+            <button
+              className="border-2 border-blue-600 text-blue-600 px-8 py-3 rounded-lg hover:bg-blue-50 transition-colors font-medium text-lg"
+              onClick={() => {
+                const aboutSection = document.getElementById('about');
+                if (aboutSection) {
+                  aboutSection.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+            >
               Learn More
             </button>
           </div>

@@ -2,6 +2,7 @@ import React from 'react';
 import { Heart, User, LogOut, Menu } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import ThemeToggle from './ThemeToggle';
+import logo from '../../../logo.png';
 
 interface HeaderProps {
   onAuthClick: () => void;
@@ -16,7 +17,7 @@ const Header: React.FC<HeaderProps> = ({ onAuthClick }) => {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
-              <Heart className="h-8 w-8 text-blue-600" />
+              <img src={logo} alt="Healing Hands Logo" className="h-10 w-10" />
               <span className="ml-2 text-xl font-bold text-theme-text-primary">Healing Hands</span>
             </div>
           </div>
