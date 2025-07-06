@@ -257,13 +257,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## 🔮 Future Enhancements
 
 - **Real-time Chat**: Patient-doctor communication
-- **Payment Integration**: Online payment processing
 - **Notification System**: Email and SMS notifications
 - **Telemedicine**: Video consultation capabilities
 - **Electronic Health Records**: Patient health history management
 - **Multi-language Support**: Internationalization
 - **Advanced Analytics**: Reporting and insights dashboard
-
----
-
-**Built with ❤️ for better healthcare accessibility**
