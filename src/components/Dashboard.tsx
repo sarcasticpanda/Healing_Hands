@@ -7,6 +7,7 @@ import DoctorCard from './DoctorCard';
 import AppointmentModal from './AppointmentModal';
 import DoctorLocationManager from './DoctorLocationManager';
 import DoctorVerification from './DoctorVerification';
+import AdvancedDoctorFilter from './AdvancedDoctorFilter';
 
 const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
@@ -14,16 +15,12 @@ const Dashboard: React.FC = () => {
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filteredDoctors, setFilteredDoctors] = useState<Doctor[]>(mockDoctors);
   const [isEditingLocation, setIsEditingLocation] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
 
   const userAppointments = mockAppointments.filter(
     appointment => appointment.patientId === user?.id || appointment.doctorId === user?.id
-  );
-
-  const filteredDoctors = mockDoctors.filter(doctor =>
-    doctor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    doctor.speciality.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleBookAppointment = (doctor: Doctor) => {
@@ -41,6 +38,14 @@ const Dashboard: React.FC = () => {
     console.log('Location saved:', address);
     alert('Clinic location updated successfully!');
     setIsEditingLocation(false);
+  };
+
+  const handleFilteredDoctors = (doctors: Doctor[]) => {
+    setFilteredDoctors(doctors);
+  };
+
+  const handleSearchChange = (term: string) => {
+    setSearchTerm(term);
   };
 
   const getStatusColor = (status: string) => {
@@ -288,44 +293,55 @@ const Dashboard: React.FC = () => {
             )}
 
             {activeTab === 'book-appointment' && user?.role === 'patient' && (
-              <div className="bg-theme-card rounded-xl shadow-lg p-6 border border-theme-border">
-                <div className="flex items-center space-x-3 mb-6">
-                  <Plus className="h-6 w-6 text-blue-600" />
-                  <h2 className="text-2xl font-bold text-theme-text-primary">Book New Appointment</h2>
-                </div>
-
-                {/* Search Bar */}
-                <div className="mb-6">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-3 h-5 w-5 text-theme-text-secondary" />
-                    <input
-                      type="text"
-                      placeholder="Search doctors by name or specialty..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 border border-theme-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-theme-background text-theme-text-primary"
-                    />
+              <div className="space-y-6">
+                <div className="bg-theme-card rounded-xl shadow-lg p-6 border border-theme-border">
+                  <div className="flex items-center space-x-3 mb-6">
+                    <Plus className="h-6 w-6 text-blue-600" />
+                    <h2 className="text-2xl font-bold text-theme-text-primary">Book New Appointment</h2>
                   </div>
+
+                  {/* Advanced Filters Component */}
+                  <AdvancedDoctorFilter
+                    doctors={mockDoctors}
+                    onFilteredDoctors={handleFilteredDoctors}
+                    searchTerm={searchTerm}
+                    onSearchChange={handleSearchChange}
+                  />
                 </div>
 
-                {/* Doctors Grid */}
-                <div className="grid grid-cols-1 gap-6">
-                  {filteredDoctors.map(doctor => (
-                    <DoctorCard
-                      key={doctor.id}
-                      doctor={doctor}
-                      onBookAppointment={handleBookAppointment}
-                    />
-                  ))}
-                </div>
-
-                {filteredDoctors.length === 0 && (
-                  <div className="text-center py-12">
-                    <Search className="h-16 w-16 text-theme-text-secondary mx-auto mb-4" />
-                    <p className="text-theme-text-secondary text-lg">No doctors found</p>
-                    <p className="text-theme-text-secondary mt-2">Try adjusting your search terms.</p>
+                {/* Doctors Results */}
+                <div className="bg-theme-card rounded-xl shadow-lg p-6 border border-theme-border">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-bold text-theme-text-primary">
+                      Available Doctors ({filteredDoctors.length})
+                    </h3>
+                    <div className="text-sm text-theme-text-secondary">
+                      {filteredDoctors.length === mockDoctors.length 
+                        ? 'Showing all doctors' 
+                        : `Filtered from ${mockDoctors.length} total doctors`
+                      }
+                    </div>
                   </div>
-                )}
+
+                  {/* Doctors Grid */}
+                  <div className="grid grid-cols-1 gap-6">
+                    {filteredDoctors.map(doctor => (
+                      <DoctorCard
+                        key={doctor.id}
+                        doctor={doctor}
+                        onBookAppointment={handleBookAppointment}
+                      />
+                    ))}
+                  </div>
+
+                  {filteredDoctors.length === 0 && (
+                    <div className="text-center py-12">
+                      <Search className="h-16 w-16 text-theme-text-secondary mx-auto mb-4" />
+                      <p className="text-theme-text-secondary text-lg">No doctors found matching your criteria</p>
+                      <p className="text-theme-text-secondary mt-2">Try adjusting your search or filters to find more results.</p>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
