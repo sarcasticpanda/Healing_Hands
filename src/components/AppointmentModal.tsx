@@ -32,12 +32,6 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
     };
 
     onBookAppointment(appointmentData);
-    onClose();
-    
-    // Reset form
-    setSelectedDate('');
-    setSelectedTime('');
-    setSymptoms('');
   };
 
   if (!isOpen || !doctor) return null;
@@ -74,7 +68,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
             <div>
               <h3 className="font-semibold text-theme-text-primary">{doctor.name}</h3>
               <p className="text-blue-600">{doctor.speciality}</p>
-              <p className="text-sm text-theme-text-secondary">${doctor.fees} consultation fee</p>
+              <p className="text-sm text-theme-text-secondary">₹{doctor.fees} consultation fee</p>
             </div>
           </div>
 
@@ -151,7 +145,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                   <p><strong>Date:</strong> {new Date(selectedDate).toLocaleDateString()}</p>
                 )}
                 {selectedTime && <p><strong>Time:</strong> {selectedTime}</p>}
-                <p><strong>Consultation Fee:</strong> ${doctor.fees}</p>
+                <p><strong>Consultation Fee:</strong> ₹{doctor.fees}</p>
               </div>
             </div>
 
@@ -159,7 +153,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
               type="submit"
               className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
             >
-              Book Appointment
+              Proceed to Payment
             </button>
           </form>
         </div>
