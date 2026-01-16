@@ -261,4 +261,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - **Telemedicine**: Video consultation capabilities
 - **Electronic Health Records**: Patient health history management
 - **Multi-language Support**: Internationalization
-- **Advanced Analytics**: Reporting and insights dashboard
+- **Advanced Analytics**: Reporting and insights dashboards
