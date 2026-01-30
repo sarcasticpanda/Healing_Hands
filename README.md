@@ -49,7 +49,7 @@ Before running this project locally, make sure you have the following installed:
 - **npm** (comes with Node.js) or **yarn**
 - A modern web browser (Chrome, Firefox, Safari, Edge)
 
-## 🚀 Getting Started
+## 🚀 Getting Started -- 
 
 ### 1. Clone the Repository
 
